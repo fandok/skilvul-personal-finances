@@ -1,101 +1,106 @@
 import {
   Button,
-  DatePicker,
+  Divider,
   Form,
+  Input,
   InputNumber,
-  Select,
-  Slider,
-  Switch,
-} from 'antd'
-import type { DatePickerProps } from 'antd'
-import { SmileFilled } from '@ant-design/icons'
-import Link from 'next/link'
-
-const FormItem = Form.Item
+  Table,
+  Typography,
+} from "antd";
+import { useState } from "react";
 
 const content = {
-  marginTop: '100px',
-}
+  marginTop: "100px",
+  padding: 25,
+};
+
+const initDataSource = [
+  {
+    item: "Paket Hemat Cheeseburger",
+    type: "spend",
+    amount: 75000,
+  },
+  {
+    item: "Gajian Januari",
+    type: "income",
+    amount: 100000,
+  },
+];
+
+const columns = [
+  {
+    title: "Item",
+    dataIndex: "item",
+  },
+  {
+    title: "Type",
+    dataIndex: "type",
+  },
+  {
+    title: "Amount",
+    dataIndex: "amount",
+  },
+];
 
 export default function Home() {
-  const onDatePickerChange: DatePickerProps['onChange'] = (
-    date,
-    dateString
-  ) => {
-    console.log(date, dateString)
-  }
+  const [dataSource, setDataSource] = useState(initDataSource);
+  const [form] = Form.useForm();
+
+  const handleFinish = (values: any) => {
+    console.log("Success:", values);
+    setDataSource([...dataSource, values]);
+  };
 
   return (
     <div style={content}>
-      <div className="text-center mb-5">
-        <Link href="#" className="logo mr-0">
-          <SmileFilled style={{ fontSize: 48 }} />
-        </Link>
+      <Typography.Title>My Personal Finances</Typography.Title>
+      <Divider />
+      <Form
+        onFinish={handleFinish}
+        form={form}
+        labelCol={{ span: 2 }}
+        wrapperCol={{ span: 16 }}
+      >
+        <Form.Item name="item" label="Item">
+          <Input />
+        </Form.Item>
+        <Form.Item name="type" label="Type">
+          <Input />
+        </Form.Item>
+        <Form.Item name="amount" label="Amount">
+          <InputNumber style={{ width: 500 }} />
+        </Form.Item>
+        <Form.Item wrapperCol={{ offset: 2 }}>
+          <Button htmlType="submit" type="primary">
+            Add Item
+          </Button>
+        </Form.Item>
+      </Form>
+      <Table
+        columns={columns}
+        dataSource={dataSource}
+        summary={(pageData) => {
+          let total = 0;
+          pageData.forEach((value) => {
+            if (value.type === "spend") {
+              total -= value.amount;
+            }
 
-        <p className="mb-0 mt-3 text-disabled">Welcome to the world !</p>
-      </div>
-      <div>
-        <Form
-          layout="horizontal"
-          size={'large'}
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 8 }}
-        >
-          <FormItem label="Input Number">
-            <InputNumber
-              min={1}
-              max={10}
-              style={{ width: 100 }}
-              defaultValue={3}
-              name="inputNumber"
-            />
-          </FormItem>
-
-          <FormItem label="Switch">
-            <Switch defaultChecked />
-          </FormItem>
-
-          <FormItem label="Slider">
-            <Slider defaultValue={70} />
-          </FormItem>
-
-          <FormItem label="Select">
-            <Select
-              defaultValue="lucy"
-              style={{ width: 192 }}
-              options={[
-                {
-                  value: 'jack',
-                  label: 'Jack',
-                },
-                {
-                  value: 'lucy',
-                  label: 'Lucy',
-                },
-                {
-                  value: 'disabled',
-                  disabled: true,
-                  label: 'Disabled',
-                },
-                {
-                  value: 'Yiminghe',
-                  label: 'yiminghe',
-                },
-              ]}
-            />
-          </FormItem>
-
-          <FormItem label="DatePicker">
-            <DatePicker showTime onChange={onDatePickerChange} />
-          </FormItem>
-          <FormItem style={{ marginTop: 48 }} wrapperCol={{ offset: 8 }}>
-            <Button type="primary" htmlType="submit">
-              OK
-            </Button>
-            <Button style={{ marginLeft: 8 }}>Cancel</Button>
-          </FormItem>
-        </Form>
-      </div>
+            if (value.type === "income") {
+              total += value.amount;
+            }
+          });
+          return (
+            <Table.Summary.Row>
+              <Table.Summary.Cell index={0}>Total</Table.Summary.Cell>
+              <Table.Summary.Cell index={1}>
+                {total > 0 ? "surplus" : "deficit"}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={2}>{total}</Table.Summary.Cell>
+            </Table.Summary.Row>
+          );
+        }}
+      />
     </div>
-  )
+  );
 }
